@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+  </head>
+  <body>
+    <h1>Drag and Drop CSV Importer</h1>
+    <div id="drop-zone" class="drop-zone">
+      <p>Drag and drop a CSV file here, or click to browse.</p>
+      <input type="file" id="csvFile" accept=".csv" style="display: none;" onchange="handleFileSelect(event)">
+    </div>
+    <h2>Filter Data</h2>
+    <label for="filterKeyword">Keyword:</label>
+    <input type="text" id="filterKeyword">
+    <button onclick="filterData()">Filter</button>
+    <style>
+  .drop-zone {
+    border: 2px dashed #ccc;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .drag-over {
+    background-color: #f0f0f0;
+  }
+</style>
+
+    <script>
+      var dropZone = document.getElementById('drop-zone');
+
+      dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+      });
+
+      dropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+      });
+
+      dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        var file = e.dataTransfer.files[0];
+        handleFile(file);
+      });
+
+      function handleFileSelect(event) {
+        var file = event.target.files[0];
+        handleFile(file);
+      }
+
+      function handleFile(file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var data = e.target.result;
+          google.script.run.importCSV(data);
+        };
+        reader.readAsText(file);
+      }
+      function filterData() {
+        var keyword = document.getElementById('filterKeyword').value.toLowerCase();
+        var filteredData = [];
+        var rows = data.split('\n');
+        for (var i = 0; i < rows.length; i++) {
+          var rowData = rows[i].split(',');
+          if (rowData.some(cell => cell.toLowerCase().includes(keyword))) {
+            filteredData.push(rowData);
+          }
+        }
+        var filteredCSV = filteredData.map(row => row.join(',')).join('\n');
+        google.script.run.importCSV(filteredCSV);
+      }
+    </script>
+  </body>
+</html>
